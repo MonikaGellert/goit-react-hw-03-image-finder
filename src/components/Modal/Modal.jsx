@@ -1,38 +1,28 @@
-import React, { Component } from 'react';
-import { createPortal } from 'react-dom';
-import s from './Modal.module.css';
-import PropTypes from 'prop-types';
+/*import React from 'react';
+import styles from './Modal.module.css'; // Zaimportuj moduł CSS
 
-const modalRoot = document.querySelector('#modalRoot');
+const Modal = ({ src, alt, onClose }) => (
+  <div className={styles.Overlay} onClick={onClose}>
+    <div className={styles.Modal}>
+      <img src={src} alt={alt} />
+    </div>
+  </div>
+);
 
-export default class Modal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.handleKeyDown);
-  }
+export default Modal;*/
+import React from 'react';
+import styles from './Modal.module.css'; // Zaimportuj moduł CSS
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.handleKeyDown);
-  }
+const Modal = ({ src, alt, onClose }) => {
+  console.log('Modal is rendered!'); // Dodaj console.log tutaj
 
-  handleKeyDown = e => {
-    if (e.code === 'Escape') {
-      return this.props.onClose();
-    }
-  };
-
-  render() {
-    return createPortal(
-      <div className={s.overlay}>
-        <div className={s.modal}>
-          <img src={this.props.pic} alt="" />
-        </div>
-      </div>,
-      modalRoot
-    );
-  }
-}
-
-Modal.propTypes = {
-  onClose: PropTypes.func.isRequired,
-  pic: PropTypes.string.isRequired,
+  return (
+    <div className={styles.Overlay} onClick={onClose}>
+      <div className={styles.Modal}>
+        <img src={src} alt={alt} />
+      </div>
+    </div>
+  );
 };
+
+export default Modal;

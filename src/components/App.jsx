@@ -1,91 +1,90 @@
 import React, { Component } from 'react';
+import Searchbar from './Searchbar/Searchbar.jsx'; // Importuj komponent Searchbar
+import ImageGallery from './ImageGallery/ImageGallery.jsx'; // Importuj komponent ImageGallery
+import Button from './Button/Button.jsx';
+import Loader from './Loader/Loader.jsx'; // Importuj komponent Loader
+import Modal from './Modal/Modal.jsx'; // Importuj komponent Modal
 
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+// Pozostałe importy...
 
-import Searchbar from './Searchbar/Searchbar';
-import ImageGallery from './ImageGallery/ImageGallery';
-import Loader from './Loader/Loader';
-import Button from './Button/Button';
-
-export default class App extends Component {
+export class App extends Component {
   state = {
-    URL: 'https://pixabay.com/api/',
-    API_KEY: '38315473-7a19fc8f5d6ca38ee738ca71d',
-    pictures: [],
-    error: '',
-    status: 'idle',
-    page: 1,
-    query: '',
-    totalHits: null,
+    images: [], // Tablica obrazków
+    loading: false, // Flaga informująca o ładowaniu
+    query: '', // Zapytanie użytkownika
+    selectedImage: null, // Wybrany obrazek
+    page: 1, // Numer strony
+  };
+  handleImageClick = image => {
+    this.setState({ selectedImage: image });
   };
 
-  fetchImg = () => {
-    return fetch(
-      `${this.state.URL}?q=${this.state.query}&page=${this.state.page}&key=${this.state.API_KEY}&image_type=photo&orientation=horizontal&per_page=12`
-    )
-      .then(res => {
-        if (res.ok) {
-          return res.json();
-        }
-        return Promise.reject(new Error('Failed to find any images'));
-      })
-      .then(pictures => {
-        if (!pictures.total) {
-          toast.error('Did find anything, mate');
-        }
-        const selectedProperties = pictures.hits.map(
-          ({ id, largeImageURL, webformatURL }) => {
-            return { id, largeImageURL, webformatURL };
-          }
-        );
-        this.setState(prevState => {
-          return {
-            pictures: [...prevState.pictures, ...selectedProperties],
-            status: 'resolved',
-            totalHits: pictures.total,
-          };
-        });
-      })
-      .catch(error => this.setState({ error, status: 'rejected' }));
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    if (this.state.query !== prevState.query) {
-      this.setState({ status: 'pending', pictures: [], page: 1 });
-      this.fetchImg();
-    }
-    if (
-      this.state.query === prevState.query &&
-      this.state.page !== prevState.page
-    ) {
-      this.setState({ status: 'pending' });
-      this.fetchImg();
-    }
-  }
-
-  processSubmit = query => {
-    this.setState({ query });
+  closeModal = () => {
+    this.setState({ selectedImage: null });
   };
 
   handleLoadMore = () => {
-    this.setState(prevState => {
-      return { page: prevState.page + 1 };
-    });
+    this.setState(
+      prevState => ({ page: prevState.page + 1 }),
+      this.fetchImages
+    );
+  };
+
+  fetchImages = () => {
+    const { query, page } = this.state;
+    this.setState({ loading: true });
+
+    const apiKey = '38179044-0b179ee03efa6bc6d9a5998f4'; // Podstaw tu swój klucz API Pixabay
+    const perPage = 12; // Liczba obrazków na stronę
+    const baseUrl = 'https://pixabay.com/api/';
+
+    const url = `${baseUrl}?q=${query}&page=${page}&key=${apiKey}&image_type=photo&orientation=horizontal&per_page=${perPage}`;
+
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        const newImages = data.hits;
+        this.setState(prevState => ({
+          images: [...prevState.images, ...newImages],
+          loading: false,
+        }));
+      })
+      .catch(error => {
+        console.error('Wystąpił błąd:', error);
+        this.setState({ loading: false });
+      });
+  };
+
+  handleSearch = query => {
+    this.setState({ query, images: [], page: 1 }, this.fetchImages);
   };
 
   render() {
-    const { pictures, status, totalHits } = this.state;
+    const { images, loading, selectedImage } = this.state;
+
     return (
-      <>
-        <Searchbar onSubmit={this.processSubmit} />
-        {pictures.length && <ImageGallery images={pictures} />}
-        {totalHits > pictures.length && (
+      <div className="App">
+        <Searchbar onSubmit={this.handleSearch} />
+        {loading ? (
+          <Loader />
+        ) : (
+          <ImageGallery
+            images={images}
+            onImageClick={this.handleImageClick}
+            onLoadMore={this.handleLoadMore}
+          />
+        )}
+        {selectedImage && (
+          <Modal
+            src={selectedImage.largeImageURL}
+            alt={selectedImage.tags}
+            onClose={this.closeModal}
+          />
+        )}
+        {images.length > 0 && !loading && (
           <Button onClick={this.handleLoadMore} />
         )}
-        {status === 'pending' && <Loader />}
-        <ToastContainer autoClose={2000} />
-      </>
+      </div>
     );
   }
 }

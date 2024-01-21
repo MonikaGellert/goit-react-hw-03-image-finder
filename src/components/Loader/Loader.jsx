@@ -1,11 +1,6 @@
 import React from 'react';
-import { DotLoader } from 'react-spinners';
-import s from './Loader.module.css';
+import styles from './Loader.module.css'; // Zaimportuj moduł CSS
 
-export default function Loader() {
-  return (
-    <div className={s.overlay}>
-      <DotLoader size={250} color={'#BA55D3'} className={s.loader} />
-    </div>
-  );
-}
+const Loader = () => <div className={styles.loaderContainer}></div>;
+
+export default Loader;

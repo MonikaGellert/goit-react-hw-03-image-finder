@@ -1,19 +1,15 @@
-import React, { Component } from 'react';
-import s from './ImageGalleryItem.module.css';
-import PropTypes from 'prop-types';
+import React from 'react';
+import styles from './ImageGalleryItem.module.css'; // Zaimportuj moduł CSS
 
-export default class ImageGalleryItem extends Component {
-  render() {
-    return (
-      <li className={s.galleryItem}>
-        <img src={this.props.smallImgURL} alt={this.props.id} />
-      </li>
-    );
-  }
-}
+const ImageGalleryItem = ({ image, onImageClick }) => (
+  <li className={styles.GalleryItem}>
+    <img
+      src={image.webformatURL}
+      alt={image.tags}
+      className={styles.GalleryItemImage}
+      onClick={() => onImageClick(image)}
+    />
+  </li>
+);
 
-
-ImageGalleryItem.propTypes = {
-  id: PropTypes.number.isRequired,
-  smallImgURL: PropTypes.string.isRequired,
-};
+export default ImageGalleryItem;
